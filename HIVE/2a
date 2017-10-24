@@ -1,0 +1,2 @@
+2 a:Which part of the US has the most Data Engineer jobs each year? - [HIVE]
+A:select CITY,year,COUNT(job_title)AS A,worksite from h1b_fianl where job_title="DATA ENGINEER" GROUP BY CITY,YEAR ORDER BY A DESC;
