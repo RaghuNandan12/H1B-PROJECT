@@ -1,0 +1,91 @@
+8 (1)
+
+import java.io.IOException;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Mapper.Context;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+import org.apache.hadoop.mapreduce.Reducer;
+
+public class JobTitle1 
+{
+	
+	public static class JobMap extends Mapper<LongWritable,Text,Text,IntWritable>
+	{
+		public void map(LongWritable key,Text value,Context context) throws IOException, InterruptedException
+		{
+			 String[] str=value.toString().split("\t");
+			 
+  		 String year=str[7];
+	         String position=str[5];
+	         String wage = str[6];
+	         if(position.contains("N"))
+			 {
+				 context.write(new Text(year),new IntWritable(Integer.parseInt(wage)));
+			 }
+		}
+	}
+	
+	
+	
+	public static class JobReduce extends Reducer<Text,IntWritable,Text,IntWritable>
+	{
+		 IntWritable result = new IntWritable();
+		public void reduce(Text key,Iterable<IntWritable> value,Context context) throws IOException, InterruptedException
+		{
+			
+           
+			 //String myWord=job +" "+ wage;
+			int avg=0,sum=0;
+			int count=0;
+			
+			
+				
+				for(IntWritable val : value)
+				{
+					sum +=val.get();
+				
+				    count++;
+				}
+				
+				
+				avg=sum/count;
+				
+			result.set(avg);
+			context.write(key,result);
+		
+	     
+		}
+	
+	}
+ public static void main(String[] aa)throws IOException, ClassNotFoundException, InterruptedException
+ {
+
+		  Configuration conf = new Configuration(); 
+			Job job = Job.getInstance(conf,"JOB-TITLE");
+		    job.setJarByClass(JobTitle1.class);
+		    job.setMapperClass(JobMap.class);
+		    job.setReducerClass(JobReduce.class);
+		    //job.setNumReduceTasks(0);
+		    job.setMapOutputKeyClass(Text.class);
+		    job.setMapOutputValueClass(IntWritable.class);
+		    job.setOutputKeyClass(Text.class);
+		    job.setOutputValueClass(IntWritable.class);
+		    FileInputFormat.addInputPath(job, new Path(aa[0]));
+		    FileSystem.get(conf).delete(new Path(aa[1]),true);
+		    FileOutputFormat.setOutputPath(job, new Path(aa[1]));
+		    System.exit(job.waitForCompletion(true) ? 0 : 1);
+		
+ }
+}
+
+
