@@ -1,0 +1,3 @@
+
+1 a) Is the number of petitions with Data Engineer job title increasing over time? - [HIVE];
+  A) select year, Count(job_title) from h1b_fianl where job_title="DATA ENGINEER" group by year /
